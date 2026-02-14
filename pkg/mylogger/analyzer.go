@@ -43,6 +43,7 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				return true
 			}
 
+			// ident -- var
 			ident, ok := selection.X.(*ast.Ident)
 			if !ok || (ident.Name != "slog" && ident.Name != "log") {
 				return true
@@ -70,9 +71,34 @@ func run(pass *analysis.Pass) (interface{}, error) {
 					pass.Reportf(literal.Pos(), "log messages must be capitalized")
 				}
 
-				// 2. Только английские буквы
+				// 2. Только английские буквы без юникод символов и эмоджи
 				if !isEnglishOnly(msg) {
 					pass.Reportf(literal.Pos(), "log messages must be on English language")
+				}
+			}
+
+			// 3. безопасность данных
+			switch selection.Sel.Name {
+			case "Info", "Error", "Debug", "Warn":
+				if len(call.Args) == 0 {
+					return true
+				}
+				be, ok := n.(*ast.BinaryExpr)
+				if !ok {
+					return true
+				}
+
+				if be.Op == token.ADD {
+					if ident, ok := be.Y.(*ast.Ident); ok {
+						substrings := []string{"password", "key", "api", "pass"}
+						for _, sub := range substrings {
+							if strings.Contains(ident.Name, sub) {
+								pass.Reportf(ident.Pos(), "cannot log sensitive data directly")
+							}
+						}
+						return false
+					}
+					return false
 				}
 			}
 

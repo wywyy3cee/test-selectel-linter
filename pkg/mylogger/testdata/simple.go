@@ -11,6 +11,10 @@ func main() {
 	slog.Info("hELLO")
 	slog.Info("hELLO")
 
+	shakey := "hajlsdhfkjhljhlsdjkhljkh31289731984asfjasklfj"
+
+	slog.Warn("hello friend" + shakey)
+
 	/*
 		slog.Debug("Случилась ошибка")
 		=== RUN   TestAnalyzer
