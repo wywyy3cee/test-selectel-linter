@@ -1,11 +1,76 @@
 package mylogger
 
-import "golang.org/x/tools/go/analysis"
+import (
+	"go/ast"
+	"go/token"
+	"strings"
+	"unicode"
+
+	"golang.org/x/tools/go/analysis"
+)
 
 var Analyzer = &analysis.Analyzer{
-	Name: "mylogger",
+	Name: "selectellinter",
 	Doc:  "Test exercise for Selectel",
 	Run:  run,
 }
 
-func run(pass *analysis.Pass) (interface{}, error) {}
+/*
+type Pass struct {
+	Fset       *token.FileSet // file position information
+	Files      []*ast.File    // the abstract syntax tree of each file
+	OtherFiles []string       // names of non-Go files of this package
+	Pkg        *types.Package // type information about the package
+	TypesInfo  *types.Info    // type information about the syntax trees
+	TypesSizes types.Sizes    // function for computing sizes of types
+	...
+}
+*/
+
+func run(pass *analysis.Pass) (interface{}, error) {
+	for _, file := range pass.Files {
+		ast.Inspect(file, func(n ast.Node) bool {
+			call, ok := n.(*ast.CallExpr)
+			if !ok {
+				return true
+			}
+
+			selection, ok := call.Fun.(*ast.SelectorExpr)
+			if !ok {
+				return true
+			}
+
+			ident, ok := selection.X.(*ast.Ident)
+			if !ok || (ident.Name != "slog" && ident.Name != "log") {
+				return true
+			}
+
+			switch selection.Sel.Name {
+			case "Info", "Error", "Debug", "Warn":
+				if len(call.Args) == 0 {
+					return true
+				}
+
+				literal, ok := call.Args[0].(*ast.BasicLit)
+				if !ok || literal.Kind != token.STRING {
+					return true
+				}
+
+				// 1. Лог-сообщения должны начинаться со строчной буквы
+				msg := strings.Trim(literal.Value, "\"")
+				if len(msg) == 0 {
+					return true
+				}
+
+				first := []rune(msg)[0]
+				if unicode.IsUpper(first) {
+					pass.Reportf(literal.Pos(), "log messages must be capitalized")
+				}
+			}
+
+			return true
+		})
+	}
+	return nil, nil
+
+}
