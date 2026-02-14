@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/wywyy3cee/test-selectel-linter/pkg/mylogger"
+	mylogger "github.com/wywyy3cee/test-selectel-linter/pkg/linter"
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 

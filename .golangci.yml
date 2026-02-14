@@ -1,0 +1,18 @@
+version: "2"
+
+linters:
+  disable-all: true
+
+  custom:
+    selectellinter:
+      path: ./bin/selectellinter.so
+      description: Custom linter for Selectel specific checks
+
+  enable:
+    - selectellinter
+
+issues:
+  exclude-dirs:
+    - third_party
+    - builtin
+    - examples
