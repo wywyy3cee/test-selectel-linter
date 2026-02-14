@@ -3,6 +3,7 @@ package mylogger
 import (
 	"go/ast"
 	"go/token"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -14,6 +15,8 @@ var Analyzer = &analysis.Analyzer{
 	Doc:  "Test exercise for Selectel",
 	Run:  run,
 }
+
+var englishLetters = regexp.MustCompile(`^[a-zA-Z]+$`)
 
 /*
 type Pass struct {
@@ -66,6 +69,11 @@ func run(pass *analysis.Pass) (interface{}, error) {
 				if unicode.IsUpper(first) {
 					pass.Reportf(literal.Pos(), "log messages must be capitalized")
 				}
+
+				// 2. Только английские буквы
+				if !isEnglishOnly(msg) {
+					pass.Reportf(literal.Pos(), "log messages must be on English language")
+				}
 			}
 
 			return true
@@ -73,4 +81,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	}
 	return nil, nil
 
+}
+
+func isEnglishOnly(s string) bool {
+	return englishLetters.MatchString(s)
 }
