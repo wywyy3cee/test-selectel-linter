@@ -8,7 +8,7 @@ echo "Building plugin: $PLUGIN_NAME..."
 
 mkdir -p ./bin
 
-go build -buildmode=plugin -trimpath -o ./bin/$PLUGIN_NAME.so ./plugin/plugin.go
+CGO_ENABLED=1 go build -buildmode=plugin -trimpath -o ./bin/$PLUGIN_NAME.so ./plugin/plugin.go
 
 echo "Plugin built successfully: ./bin/$PLUGIN_NAME.so"
 echo "Go version used: $(go version)"

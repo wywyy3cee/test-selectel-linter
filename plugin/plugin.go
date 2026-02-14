@@ -5,14 +5,8 @@ import (
 	"golang.org/x/tools/go/analysis"
 )
 
-type AnalyzerPlugin struct{}
-
-func (*AnalyzerPlugin) GetAnalyzers() []*analysis.Analyzer {
+func New(conf any) ([]*analysis.Analyzer, error) {
 	return []*analysis.Analyzer{
 		mylogger.Analyzer,
-	}
-}
-
-func New(conf any) (interface{}, error) {
-	return &AnalyzerPlugin{}, nil
+	}, nil
 }
